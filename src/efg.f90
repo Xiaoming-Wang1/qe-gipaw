@@ -160,7 +160,8 @@ SUBROUTINE get_smooth_density(rho)
   USE gvecw,                  ONLY : gcutw
   USE klist,                  ONLY : nks, xk, igk_k, ngk
   USE gvect,                  ONLY : ngm, g
-  USE wavefunctions,   ONLY : evc
+  USE gvecs,                  ONLY : nls
+  USE wavefunctions_module,   ONLY : evc
   USE cell_base,              ONLY : tpiba2, omega
   USE io_files,               ONLY : nwordwfc, iunwfc
   USE buffers,                ONLY : get_buffer
@@ -195,7 +196,7 @@ SUBROUTINE get_smooth_density(rho)
      ! loop over bands
      do ibnd = 1, nbnd
        psic(:) = (0.d0,0.d0)
-       psic(dffts%nl(igk_k(1:npw,ik))) = evc(1:npw,ibnd)
+       psic(nls(igk_k(1:npw,ik))) = evc(1:npw,ibnd)
        call invfft ('Wave', psic, dffts)
        rho(:,current_spin) = rho(:,current_spin) + wg(ibnd,ik) * &
                              (dble(psic(:))**2 + aimag(psic(:))**2) / omega
@@ -232,7 +233,8 @@ SUBROUTINE efg_bare_el(rho, efg_bare)
   USE mp,                     ONLY : mp_sum
   USE mp_pools,               ONLY : intra_pool_comm
   USE constants,              ONLY : tpi, fpi
-  USE gvecs,                  ONLY : ngms
+  USE gvecs,                  ONLY : ngms, nls
+  USE gvect,                  ONLY : nl
   USE fft_base,               ONLY : dffts
   USE fft_interfaces,         ONLY : fwfft
   USE gvect,                  ONLY : g, gg, gstart
@@ -266,7 +268,7 @@ SUBROUTINE efg_bare_el(rho, efg_bare)
         efg_g(ig,alpha,alpha) = -trace
         do beta = 1, 3
            efg_g(ig,alpha,beta) = ( efg_g(ig,alpha,beta) + &
-                       g(alpha,ig)*g(beta,ig)) * fac * rhoaux(dffts%nl(ig)) / gg(ig)
+                       g(alpha,ig)*g(beta,ig)) * fac * rhoaux(nls(ig)) / gg(ig)
         enddo
      enddo
   enddo
@@ -316,7 +318,7 @@ SUBROUTINE efg_correction(efg_corr_tens)
   USE wvfct,                 ONLY : g2kin, current_k, wg
   USE gvecw,                 ONLY : gcutw
   USE lsda_mod,              ONLY : current_spin, isk
-  USE wavefunctions,  ONLY : evc
+  USE wavefunctions_module,  ONLY : evc
   USE paw_gipaw,             ONLY : paw_recon, paw_nkb, paw_vkb, paw_becp
   USE becmod,                ONLY : calbec
   USE constants,             ONLY : pi, fpi

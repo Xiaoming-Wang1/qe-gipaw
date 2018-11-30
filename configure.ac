@@ -25,10 +25,19 @@ AC_CHECK_FILE(${qe_source}/Modules/version.f90, [], [AC_MSG_ERROR([Cannot find v
 
 # Extract version
 AC_MSG_CHECKING([Quantum-Espresso version])
-version=`grep version_number ${qe_source}/Modules/version.f90 | cut -d\' -f2`
+version=`grep version_number ${qe_source}/Modules/version.f90 | cut -d\' -f2 |head -1`
 AC_MSG_RESULT([$version])
 case $version in
-  6.3* ) ;;
+  6.1* ) ;;
+  *) AC_MSG_ERROR([Cannot compile against this version of Quantum-Espresso]) ;;
+esac
+
+# GPU version
+AC_MSG_CHECKING([Quantum-Espresso GPU version])
+version=`grep gpu_version_number ${qe_source}/Modules/version.f90 | cut -d\' -f2`
+AC_MSG_RESULT([$version])
+case $version in
+  1.0* ) ;;
   *) AC_MSG_ERROR([Cannot compile against this version of Quantum-Espresso]) ;;
 esac
 

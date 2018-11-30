@@ -11,7 +11,6 @@ SUBROUTINE interpolate_current(j_bare_s, j_bare)
   ! ... Interpolate the current to the fine mesh
   USE kinds,                  ONLY : dp
   USE fft_base,               ONLY : dfftp, dffts
-  USE fft_interfaces,         ONLY : fft_interpolate
   USE lsda_mod,               ONLY : nspin
   !-- parameters ---------------------------------------------------------
   IMPLICIT none
@@ -23,7 +22,7 @@ SUBROUTINE interpolate_current(j_bare_s, j_bare)
   do ispin = 1, nspin
     do ipol = 1, 3
       do jpol = 1, 3
-        call fft_interpolate(dffts, j_bare_s(:,ipol,jpol,ispin), dfftp, j_bare(:,ipol,jpol,ispin))
+        call interpolate(dffts, j_bare_s(:,ipol,jpol,ispin), dfftp, j_bare(:,ipol,jpol,ispin))
       enddo
     enddo
   enddo
@@ -48,7 +47,7 @@ SUBROUTINE biot_savart(j_bare, B_ind, B_ind_r)
   USE cell_base,            ONLY : tpiba
   USE gipaw_module,         ONLY : alpha
   USE lsda_mod,             ONLY : nspin
-  USE gvect,                ONLY : ngm, gstart, g, gg
+  USE gvect,                ONLY : ngm, gstart, g, gg, nl
   USE fft_base,             ONLY : dfftp
   USE fft_interfaces,       ONLY : fwfft, invfft 
   !-- parameters ---------------------------------------------------------
@@ -74,8 +73,8 @@ SUBROUTINE biot_savart(j_bare, B_ind, B_ind_r)
       j_of_g(:,:) = (0.d0,0.d0)
       do ipol = 1, 3
         aux(1:dfftp%nnr) = j_bare(1:dfftp%nnr,ipol,jpol,ispin)
-        call fwfft ('Rho', aux, dfftp)
-        j_of_g(1:ngm,ipol) = aux(dfftp%nl(1:ngm))
+        call fwfft ('Dense', aux, dfftp)
+        j_of_g(1:ngm,ipol) = aux(nl(1:ngm))
       enddo
 
       ! compute induced field in reciprocal space
@@ -89,8 +88,8 @@ SUBROUTINE biot_savart(j_bare, B_ind, B_ind_r)
       ! transform induced field in real space
       do ipol = 1, 3
         aux = (0.d0,0.d0)
-        aux(dfftp%nl(1:ngm)) = B_ind(1:ngm,ipol,jpol,ispin)
-        call invfft ('Rho', aux, dfftp)
+        aux(nl(1:ngm)) = B_ind(1:ngm,ipol,jpol,ispin)
+        call invfft ('Dense', aux, dfftp)
         B_ind_r(1:dfftp%nnr,ipol,jpol,ispin) = real(aux(1:dfftp%nnr))
       enddo
 
@@ -121,7 +120,7 @@ SUBROUTINE biot_savart_sic(j_bare, B_ind, B_ind_r)
   USE cell_base,            ONLY : tpiba
   USE gipaw_module,         ONLY : alpha
   USE lsda_mod,             ONLY : nspin
-  USE gvect,                ONLY : ngm, gstart, g, gg
+  USE gvect,                ONLY : ngm, gstart, g, gg, nl
   USE fft_base,             ONLY : dfftp
   USE fft_interfaces,       ONLY : fwfft, invfft 
   !-- parameters ---------------------------------------------------------
@@ -147,8 +146,8 @@ SUBROUTINE biot_savart_sic(j_bare, B_ind, B_ind_r)
       do ipol = 1, 3
         aux(1:dfftp%nnr) = j_bare(1:dfftp%nnr,ipol,jpol,2)
         !aux(1:dfftp%nnr) = j_bare(1:dfftp%nnr,ipol,jpol,ispin)
-        CALL fwfft ('Rho', aux, dfftp)
-        j_of_g(1:ngm,ipol) = aux(dfftp%nl(1:ngm))
+        CALL fwfft ('Dense', aux, dfftp)
+        j_of_g(1:ngm,ipol) = aux(nl(1:ngm))
       enddo
 
       ! compute induced field in reciprocal space
@@ -162,8 +161,8 @@ SUBROUTINE biot_savart_sic(j_bare, B_ind, B_ind_r)
       ! transform induced field in real space
       do ipol = 1, 3
         aux = (0.d0,0.d0)
-        aux(dfftp%nl(1:ngm)) = B_ind(1:ngm,ipol,jpol,ispin)
-        CALL invfft ('Rho', aux, dfftp)
+        aux(nl(1:ngm)) = B_ind(1:ngm,ipol,jpol,ispin)
+        CALL invfft ('Dense', aux, dfftp)
         B_ind_r(1:dfftp%nnr,ipol,jpol,ispin) = real(aux(1:dfftp%nnr))
       enddo
 

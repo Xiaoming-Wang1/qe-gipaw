@@ -21,7 +21,7 @@ SUBROUTINE rmc(s_weight, delta_g_rmc, delta_g_rmc_gipaw)
   USE ions_base,              ONLY : nat, ityp, ntyp => nsp
   USE wvfct,                  ONLY : nbnd, wg, g2kin, current_k
   USE klist,                  ONLY : ngk
-  USE wavefunctions,   ONLY : evc
+  USE wavefunctions_module,   ONLY : evc
   USE becmod,                 ONLY : calbec  
   USE paw_gipaw,              ONLY : paw_becp, paw_recon
   USE gipaw_module,           ONLY : nbnd_occ, radial_integral_rmc
@@ -280,7 +280,7 @@ SUBROUTINE paramagnetic_correction_aug_so (paug_corr_tensor, j_bare_s)
   USE wvfct,                  ONLY : nbnd, npwx, wg, g2kin, current_k
   USE gvecw,                  ONLY : gcutw
   USE lsda_mod,               ONLY : current_spin
-  USE wavefunctions,   ONLY : evc
+  USE wavefunctions_module,   ONLY : evc
   USE becmod,                 ONLY : calbec, allocate_bec_type, deallocate_bec_type
   USE constants,              ONLY : pi
   USE lsda_mod,               ONLY : nspin
@@ -288,7 +288,7 @@ SUBROUTINE paramagnetic_correction_aug_so (paug_corr_tensor, j_bare_s)
   USE gipaw_module,           ONLY : lx, ly, lz, radial_integral_paramagnetic_so, &
                                      q_gipaw, alpha
   USE fft_base,               ONLY : dffts
-  USE uspp,                   ONLY : qq_nt, vkb, nkb 
+  USE uspp,                   ONLY : qq, vkb, nkb 
   USE uspp_param,             ONLY : nh
   USE cell_base,              ONLY : tpiba, tpiba2
   USE klist,                  ONLY : xk, igk_k, ngk
@@ -338,7 +338,7 @@ SUBROUTINE paramagnetic_correction_aug_so (paug_corr_tensor, j_bare_s)
                  ikb = ijkb0 + ih
                  do jh = 1, nh(nt)
                     jkb = ijkb0 + jh  
-                    ps(jkb, ibnd) = ps(jkb, ibnd) + qq_nt(jh,ih,nt) * becp2(ikb,ibnd)
+                    ps(jkb, ibnd) = ps(jkb, ibnd) + qq(jh,ih,nt) * becp2(ikb,ibnd)
                  enddo ! jh
               enddo ! ih
            enddo ! nbnd
@@ -523,7 +523,7 @@ SUBROUTINE compute_delta_g_soo (j_bare, B_ind_r, s_maj, s_min, delta_g_soo, delt
   USE kinds,                  ONLY : dp
   USE constants,              ONLY : pi
   USE cell_base,              ONLY : omega
-  USE gvect,                  ONLY : g, ngm
+  USE gvect,                  ONLY : g, ngm, nl
   USE scf,                    ONLY : rho
   USE lsda_mod,               ONLY : nspin
   USE gipaw_module,           ONLY : ry2ha, alpha, gprime
@@ -551,7 +551,7 @@ SUBROUTINE compute_delta_g_soo (j_bare, B_ind_r, s_maj, s_min, delta_g_soo, delt
   aux1(:) = rho%of_r(:,s_maj) - rho%of_r(:,s_min)
   call fwfft('Rho', aux1, dfftp)
 
-  rho%of_g(:,1) = aux1(dfftp%nl(:))
+  rho%of_g(:,1) = aux1(nl(:))
   rho%of_g(:,2) = 0.d0
   vh = 0.d0
 

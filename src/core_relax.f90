@@ -22,7 +22,7 @@ SUBROUTINE hfi_fc_core_relax(method, fc_core)
   USE atom,                  ONLY : rgrid
   USE radial_grids,          ONLY : ndmx
   USE scf,                   ONLY : rho
-  USE gvect,                 ONLY : g, ngm
+  USE gvect,                 ONLY : g, ngm, nl
   USE fft_base,              ONLY : dfftp
   USE fft_interfaces,        ONLY : fwfft
   USE lsda_mod,              ONLY : nspin, isk, current_spin
@@ -32,7 +32,7 @@ SUBROUTINE hfi_fc_core_relax(method, fc_core)
   USE wvfct,                 ONLY : nbnd, g2kin, wg, current_k
   USE gvecw,                 ONLY : gcutw
   USE becmod,                ONLY : calbec
-  USE wavefunctions,  ONLY : evc
+  USE wavefunctions_module,  ONLY : evc
   USE io_global,             ONLY : stdout
   USE io_files,              ONLY : nwordwfc, iunwfc
   USE mp_pools,              ONLY : intra_pool_comm, inter_pool_comm
@@ -187,7 +187,7 @@ SUBROUTINE hfi_fc_core_relax(method, fc_core)
     do ispin = 1, nspin
       aux(1:dfftp%nnr) = rho%of_r(1:dfftp%nnr,ispin)
       call fwfft('Rho',aux,dfftp)
-      rho_g(1:ngm) = aux(dfftp%nl(1:ngm))
+      rho_g(1:ngm) = aux(nl(1:ngm))
       call spherical_average(rgrid(nt)%mesh, rgrid(nt)%r, tau(1,na), r_max, rho_g, sph_rho_bare(1,ispin))
     enddo
     call mp_sum(sph_rho_bare, intra_pool_comm)

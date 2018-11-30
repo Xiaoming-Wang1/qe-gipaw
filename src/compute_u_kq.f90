@@ -31,7 +31,7 @@ SUBROUTINE compute_u_kq(ik, q)
   USE control_flags,        ONLY : cntrl_isolve => isolve
   USE ldaU,                 ONLY : lda_plus_u, wfcU
   USE lsda_mod,             ONLY : current_spin, lsda, isk, nspin
-  USE wavefunctions, ONLY : evc  
+  USE wavefunctions_module, ONLY : evc  
   USE gvect,                ONLY : g, ngm, gstart
   USE gvecs,                ONLY : doublegrid
   USE dfunct,               ONLY : newd
@@ -43,6 +43,7 @@ SUBROUTINE compute_u_kq(ik, q)
   USE becmod,               ONLY : becp, allocate_bec_type, deallocate_bec_type
   USE buffers
   USE gipaw_module
+  USE cpu_gpu_interface
   IMPLICIT NONE
   INTEGER :: ik, iter       ! k-point, current iterations
   REAL(DP) :: q(3)          ! q-vector

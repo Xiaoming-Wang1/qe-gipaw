@@ -18,6 +18,7 @@ SUBROUTINE j_para(fact, psi_n, psi_m, ik, q, j)
   USE klist,                  ONLY : xk, wk, igk_k, ngk
   USE wvfct,                  ONLY : nbnd, npwx
   USE gvect,                  ONLY : g
+  USE gvecs,                  ONLY : nls
   USE cell_base,              ONLY : tpiba
   USE gipaw_module,           ONLY : nbnd_occ
   USE fft_base,               ONLY : dffts
@@ -77,11 +78,11 @@ SUBROUTINE j_para(fact, psi_n, psi_m, ik, q, j)
      
       ! transform to real space
       p_psic(:) = (0.d0,0.d0)
-      p_psic(dffts%nl(igk_k(1:npw,ik))) = aux(1:npw)
+      p_psic(nls(igk_k(1:npw,ik))) = aux(1:npw)
       CALL invfft ('Wave', p_psic, dffts)
 
       psic(:) = (0.d0,0.d0)
-      psic(dffts%nl(igk_k(1:npw,ik))) = psi_m(1:npw,ibnd)
+      psic(nls(igk_k(1:npw,ik))) = psi_m(1:npw,ibnd)
       CALL invfft ('Wave', psic, dffts)
 
       ! add to the current
@@ -100,11 +101,11 @@ SUBROUTINE j_para(fact, psi_n, psi_m, ik, q, j)
      
       ! transform to real space
       p_psic(:) = (0.d0,0.d0)
-      p_psic(dffts%nl(igk_k(1:npw,ik))) = aux(1:npw)
+      p_psic(nls(igk_k(1:npw,ik))) = aux(1:npw)
       CALL invfft ('Wave', p_psic, dffts)
 
       psic(:) = (0.d0,0.d0)
-      psic(dffts%nl(igk_k(1:npw,ik))) = psi_n(1:npw,ibnd)
+      psic(nls(igk_k(1:npw,ik))) = psi_n(1:npw,ibnd)
       CALL invfft ('Wave', psic, dffts)
 
       ! add to the current

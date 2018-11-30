@@ -32,7 +32,7 @@ SUBROUTINE apply_p(psi, p_psi, ik, ipol, q)
   USE mp,                   ONLY : mp_sum
   USE gipaw_module,         ONLY : ibnd_start, ibnd_end
 #endif
-
+  USE cpu_gpu_interface
   !-- parameters ---------------------------------------------------------
   IMPLICIT none
   INTEGER, INTENT(IN) :: ik               ! k-point
@@ -84,6 +84,7 @@ SUBROUTINE apply_vel_NL(what, psi, vel_psi, ik, ipol, q)
   USE mp,                   ONLY : mp_sum
   USE gipaw_module,         ONLY : ibnd_start, ibnd_end
 #endif
+  USE cpu_gpu_interface
   !-- paramters ----------------------------------------------------------
   IMPLICIT NONE
   CHARACTER, INTENT(IN) :: what     ! 'S' or 'V'
@@ -216,6 +217,7 @@ SUBROUTINE apply_vel(psi, vel_psi, ik, ipol, q)
 #ifdef __BANDS
   USE gipaw_module,         ONLY : ibnd_start, ibnd_end
 #endif
+  USE cpu_gpu_interface
 
   !-- paramters ----------------------------------------------------------
   IMPLICIT NONE

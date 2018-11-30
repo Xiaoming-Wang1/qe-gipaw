@@ -27,12 +27,12 @@ PROGRAM gipaw_main
   ! ... C. J. Pickard and F. Mauri, Phys. Rev. Lett. 88, 086403 (2002)
   ! ...
   USE kinds,           ONLY : DP
-  USE io_files,        ONLY : tmp_dir, create_directory
+  USE io_files,        ONLY : tmp_dir
   USE io_global,       ONLY : stdout, meta_ionode, meta_ionode_id
   USE mp,              ONLY : mp_bcast
   USE cell_base,       ONLY : tpiba
   USE gipaw_module,    ONLY : job, q_gipaw, max_seconds
-  USE check_stop  ,    ONLY : check_stop_init
+  USE check_stop,      ONLY : check_stop_init
   USE control_flags,   ONLY : io_level, gamma_only, use_para_diag, twfcollect
   USE mp_global,       ONLY : mp_startup, nproc_pool_file
   USE mp_world,        ONLY : world_comm
@@ -58,6 +58,7 @@ PROGRAM gipaw_main
   ! end
   USE gipaw_version
   USE iotk_module  
+  USE xml_io_base
   !------------------------------------------------------------------------
   IMPLICIT NONE
   CHARACTER (LEN=9)   :: code = 'GIPAW'
@@ -84,6 +85,8 @@ PROGRAM gipaw_main
 
   write(stdout,*)
   write(stdout,'(5X,''***** This is GIPAW git revision '',A,'' *****'')') gipaw_git_revision
+  write(stdout,'(5X,''***** GPU version '',A,''                                                  *****'')') &
+                gpu_version_number
   write(stdout,'(5X,''***** you can cite: N. Varini et al., Comp. Phys. Comm. 184, 1827 (2013)  *****'')')
   write(stdout,'(5X,''***** in publications or presentations arising from this work.            *****'')')
   write(stdout,*)
@@ -92,7 +95,7 @@ PROGRAM gipaw_main
   if (nimage > 7) write(stdout,'(5X,''ATTENTION: optimal number of images is 7'')')
 
   call gipaw_readin()
-  call check_stop_init( max_seconds )
+  call check_stop_init()
 
   io_level = 1
  

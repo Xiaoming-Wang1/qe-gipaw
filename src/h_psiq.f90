@@ -34,6 +34,7 @@ subroutine h_psiq (lda, n, m, psi, hpsi, spsi)
   USE scf,                   ONLY : vrs
   USE noncollin_module,      ONLY : npol, noncolin
 #endif
+  USE cpu_gpu_interface
   !--------------------------------------------------------------------
   IMPLICIT NONE
   integer, intent(in) :: lda     ! the leading dimension of the array psi (npwx)

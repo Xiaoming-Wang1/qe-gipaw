@@ -21,6 +21,7 @@ SUBROUTINE orthoatwfc1(ik)
   USE uspp,             ONLY : nkb, vkb
   USE becmod,           ONLY : allocate_bec_type, deallocate_bec_type, &
                                bec_type, becp, calbec
+  USE cpu_gpu_interface
 
   !-- parameters ---------------------------------------------------------
   IMPLICIT NONE

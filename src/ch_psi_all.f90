@@ -27,6 +27,7 @@ subroutine ch_psi_all (n, h, ah, e, ik, m)
 #ifdef __BANDS
   USE mp_bands,     ONLY : intra_bgrp_comm
 #endif
+  USE cpu_gpu_interface
   implicit none
 
   integer :: n, m, ik

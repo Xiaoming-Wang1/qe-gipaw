@@ -21,6 +21,7 @@ MODULE gipaw_version
   SAVE
   !
   CHARACTER (LEN=40) :: gipaw_git_revision = "$gitrev"
+  CHARACTER (LEN=6) :: gpu_version_number = '1.0'
   !
 END MODULE gipaw_version
 EOF

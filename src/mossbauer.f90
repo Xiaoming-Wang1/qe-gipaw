@@ -114,7 +114,7 @@ SUBROUTINE moss_bare_el(rho_s, moss_bare)
   USE mp,                     ONLY : mp_sum
   USE mp_pools,               ONLY : intra_pool_comm
   USE constants,              ONLY : tpi, fpi
-  USE gvecs,                  ONLY : ngms
+  USE gvecs,                  ONLY : ngms, nls
   USE gvect,                  ONLY : g, gstart
   USE parameters,             ONLY : ntypx
   USE ions_base,              ONLY : nat, tau
@@ -142,7 +142,7 @@ SUBROUTINE moss_bare_el(rho_s, moss_bare)
       do ig = gstart, ngms
           arg = sum(tau(1:3,na) * g(1:3,ig)) * tpi
           phase = cmplx(cos(arg),sin(arg), kind=dp)
-          moss_bare(na) = moss_bare(na) + real(rhoaux(dffts%nl(ig)) * phase, kind=dp)
+          moss_bare(na) = moss_bare(na) + real(rhoaux(nls(ig)) * phase, kind=dp)
       enddo
   enddo
   call mp_sum(moss_bare, intra_pool_comm)
@@ -168,7 +168,7 @@ SUBROUTINE moss_gipaw_correction(moss_gipaw)
   USE ions_base,             ONLY : nat, ityp, ntyp => nsp
   USE wvfct,                 ONLY : g2kin
   USE gvecw,                 ONLY : gcutw
-  USE wavefunctions,  ONLY : evc
+  USE wavefunctions_module,  ONLY : evc
   USE paw_gipaw,             ONLY : paw_recon, paw_nkb, paw_vkb, paw_becp
   USE becmod,                ONLY : calbec
   USE constants,             ONLY : pi, fpi
