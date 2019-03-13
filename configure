@@ -1760,20 +1760,20 @@ version=`grep version_number ${qe_source}/Modules/version.f90 | cut -d\' -f2 |he
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $version" >&5
 $as_echo "$version" >&6; }
 case $version in
-  6.1* ) ;;
+  6.3* ) ;;
   *) as_fn_error $? "Cannot compile against this version of Quantum-Espresso" "$LINENO" 5 ;;
 esac
 
 # GPU version
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Quantum-Espresso GPU version" >&5
-$as_echo_n "checking Quantum-Espresso GPU version... " >&6; }
-version=`grep gpu_version_number ${qe_source}/Modules/version.f90 | cut -d\' -f2`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $version" >&5
-$as_echo "$version" >&6; }
-case $version in
-  1.0* ) ;;
-  *) as_fn_error $? "Cannot compile against this version of Quantum-Espresso" "$LINENO" 5 ;;
-esac
+#{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Quantum-Espresso GPU version" >&5
+#$as_echo_n "checking Quantum-Espresso GPU version... " >&6; }
+#version=`grep gpu_version_number ${qe_source}/Modules/version.f90 | cut -d\' -f2`
+#{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $version" >&5
+#$as_echo "$version" >&6; }
+#case $version in
+#  1.0* ) ;;
+#  *) as_fn_error $? "Cannot compile against this version of Quantum-Espresso" "$LINENO" 5 ;;
+##esac
 
 ## Extract svn revision
 #AC_MSG_CHECKING([Quantum-Espresso SVN revision])

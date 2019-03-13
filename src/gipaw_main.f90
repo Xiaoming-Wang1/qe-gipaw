@@ -33,7 +33,8 @@ PROGRAM gipaw_main
   USE cell_base,       ONLY : tpiba
   USE gipaw_module,    ONLY : job, q_gipaw, max_seconds
   USE check_stop,      ONLY : check_stop_init
-  USE control_flags,   ONLY : io_level, gamma_only, use_para_diag, twfcollect
+  USE control_flags,   ONLY : io_level, gamma_only, use_para_diag, &
+                              twfcollect, david, isolve
   USE mp_global,       ONLY : mp_startup, nproc_pool_file
   USE mp_world,        ONLY : world_comm
   USE mp_images,       ONLY : nimage, my_image_id
@@ -94,6 +95,8 @@ PROGRAM gipaw_main
   write(stdout,'(5X,''Parallelizing q-star over'',I2,'' images'')') nimage
   if (nimage > 7) write(stdout,'(5X,''ATTENTION: optimal number of images is 7'')')
 
+  david = 4
+  isolve = 0
   call gipaw_readin()
   call check_stop_init()
 

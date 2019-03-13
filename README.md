@@ -1,7 +1,7 @@
 # QE-GIPAW
 This is the official Git repository of the GIPAW code for Quantum-Espresso.
 
-**This version is for GPUs! Compile it against [qe-gpu](https://github.com/fspiga/qe-gpu) by F. Spiga**
+**This version is for GPUs! Compile it against [qe-gpu](https://github.com/fspiga/qe-gpu) by Filippo Spiga.**
 
 ## Features
 * NMR shielding tensors, EFG tensors
