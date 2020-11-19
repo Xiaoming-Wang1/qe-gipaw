@@ -119,7 +119,7 @@ PROGRAM gipaw_main
   if (nbgrp > 1) &
     call errore('gipaw_main', 'Cannot use band-parallelization without wf_collect in SCF', 1)
 #endif
-  if (noncolin) call errore('gipaw_main', 'non-collinear not supported yet', 1)
+  !if (noncolin) call errore('gipaw_main', 'non-collinear not supported yet', 1)
 
   nat_ = nat
   ntyp_ = ntyp
@@ -172,6 +172,7 @@ PROGRAM gipaw_main
      
   case ( 'orbm' )
      call calc_orb_magnetization
+     if (okvan) call errore('gipaw_main', 'orbital magnetization not available with ultrasoft', 1)
      
   case default
      call errore('gipaw_main', 'wrong or undefined job in input', 1)
