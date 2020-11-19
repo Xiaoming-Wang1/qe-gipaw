@@ -170,6 +170,9 @@ PROGRAM gipaw_main
      if (nspin /= 2) call errore('gipaw_main', 'hyperfine is only for spin-polarized', 1)
      call hyperfine
      
+  case ( 'orbm' )
+     call calc_orb_magnetization
+     
   case default
      call errore('gipaw_main', 'wrong or undefined job in input', 1)
   end select
