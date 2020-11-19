@@ -24,6 +24,7 @@ subroutine ch_psi_all (n, h, ah, e, ik, m)
   USE gipaw_module, ONLY : nbnd_occ, alpha_pv, evq
   USE mp_pools,     ONLY : intra_pool_comm
   USE mp,           ONLY : mp_sum
+  USE noncollin_module,      ONLY : noncolin, npol
 #ifdef __BANDS
   USE mp_bands,     ONLY : intra_bgrp_comm
 #endif
@@ -39,7 +40,7 @@ subroutine ch_psi_all (n, h, ah, e, ik, m)
   real(DP) :: e (m)
   ! input: the eigenvalue
 
-  complex(DP) :: h (npwx, m), ah (npwx, m)
+  complex(DP) :: h (npwx*npol, m), ah (npwx*npol, m)
   ! input: the vector
   ! output: the operator applied to the vector
   !
@@ -57,8 +58,8 @@ subroutine ch_psi_all (n, h, ah, e, ik, m)
 
   call start_clock ('ch_psi')
   allocate (ps  ( nbnd , m))    
-  allocate (hpsi( npwx , m))    
-  allocate (spsi( npwx , m))    
+  allocate (hpsi( npwx*npol , m))    
+  allocate (spsi( npwx*npol , m))    
   hpsi (:,:) = (0.d0, 0.d0)
   spsi (:,:) = (0.d0, 0.d0)
   !
@@ -82,6 +83,11 @@ subroutine ch_psi_all (n, h, ah, e, ik, m)
      do ig = 1, n
         ah (ig, ibnd) = hpsi (ig, ibnd) - e (ibnd) * spsi (ig, ibnd)
      enddo
+     if (noncolin) then
+        DO ig = 1, n
+           ah(ig+npwx, ibnd) = hpsi(ig+npwx, ibnd) - e(ibnd) * spsi(ig+npwx, ibnd)
+        ENDDO
+     endif
   enddo
   !
   !   Here we compute the projector in the valence band
@@ -89,12 +95,22 @@ subroutine ch_psi_all (n, h, ah, e, ik, m)
   ikq = ik
   ps (:,:) = (0.d0, 0.d0)
 #ifdef __BANDS
-  call zgemm ('C', 'N', nbnd_occ (ikq) , ibnd_end-ibnd_start+1, n, (1.d0, 0.d0) , evq, &
+  if (noncolin) then
+       call zgemm ('C', 'N', nbnd_occ (ikq) , ibnd_end-ibnd_start+1, npwx*npol, (1.d0, 0.d0) , evq, &
+       npwx*npol, spsi(1,ibnd_start), npwx*npol, (0.d0, 0.d0) , ps(1,ibnd_start), nbnd)
+  else
+       call zgemm ('C', 'N', nbnd_occ (ikq) , ibnd_end-ibnd_start+1, n, (1.d0, 0.d0) , evq, &
        npwx, spsi(1,ibnd_start), npwx, (0.d0, 0.d0) , ps(1,ibnd_start), nbnd)
+  endif
   ps (:,ibnd_start:ibnd_end) = ps(:,ibnd_start:ibnd_end) * alpha_pv
 #else
-  call zgemm ('C', 'N', nbnd_occ (ikq) , m, n, (1.d0, 0.d0) , evq, &
+  if (noncolin) then
+       call zgemm ('C', 'N', nbnd_occ (ikq) , m, npwx*npol, (1.d0, 0.d0) , evq, &
+       npwx*npol, spsi, npwx*npol, (0.d0, 0.d0) , ps, nbnd)
+  else
+       call zgemm ('C', 'N', nbnd_occ (ikq) , m, n, (1.d0, 0.d0) , evq, &
        npwx, spsi, npwx, (0.d0, 0.d0) , ps, nbnd)
+  endif
   ps (:,:) = ps(:,:) * alpha_pv
 #endif
 
@@ -108,12 +124,22 @@ subroutine ch_psi_all (n, h, ah, e, ik, m)
 
   hpsi (:,:) = (0.d0, 0.d0)
 #ifdef __BANDS
-  call zgemm ('N', 'N', n, ibnd_end-ibnd_start+1, nbnd_occ (ikq) , (1.d0, 0.d0) , evq, &
+  if (noncolin) then
+      call zgemm ('N', 'N', npwx*npol, ibnd_end-ibnd_start+1, nbnd_occ (ikq) , (1.d0, 0.d0) , evq, &
+       npwx*npol, ps(1,ibnd_start), nbnd, (1.d0, 0.d0) , hpsi(1,ibnd_start), npwx*npol)
+  else
+      call zgemm ('N', 'N', n, ibnd_end-ibnd_start+1, nbnd_occ (ikq) , (1.d0, 0.d0) , evq, &
        npwx, ps(1,ibnd_start), nbnd, (1.d0, 0.d0) , hpsi(1,ibnd_start), npwx)
+  endif
   spsi(:,ibnd_start:ibnd_end) = hpsi(:,ibnd_start:ibnd_end)
 #else
-  call zgemm ('N', 'N', n, m, nbnd_occ (ikq) , (1.d0, 0.d0) , evq, &
+  if (noncolin) then
+       call zgemm ('N', 'N', npwx*npol, m, nbnd_occ (ikq) , (1.d0, 0.d0) , evq, &
+       npwx*npol, ps, nbnd, (1.d0, 0.d0) , hpsi, npwx*npol)
+  else
+       call zgemm ('N', 'N', n, m, nbnd_occ (ikq) , (1.d0, 0.d0) , evq, &
        npwx, ps, nbnd, (1.d0, 0.d0) , hpsi, npwx)
+  endif
   spsi(:,:) = hpsi(:,:)
 #endif
   !
@@ -135,6 +161,11 @@ subroutine ch_psi_all (n, h, ah, e, ik, m)
      do ig = 1, n
         ah (ig, ibnd) = ah (ig, ibnd) + spsi (ig, ibnd)
      enddo
+     if (noncolin) then
+        DO ig = 1, n
+             ah (ig+npwx, ibnd) = ah (ig+npwx, ibnd) + spsi (ig+npwx, ibnd)
+        ENDDO
+     endif
   enddo
 
   deallocate (spsi)
