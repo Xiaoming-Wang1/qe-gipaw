@@ -20,7 +20,7 @@ SUBROUTINE greenfunction(ik, psi, g_psi, q)
   USE becmod,                      ONLY : bec_type, becp, calbec, &
                                           allocate_bec_type, deallocate_bec_type
   USE wavefunctions,        ONLY : evc
-  USE noncollin_module,            ONLY : npol
+  USE noncollin_module,            ONLY : npol, noncolin
   USE pwcom,                       ONLY : ef
   USE wvfct,                       ONLY : nbnd, et, npwx, g2kin
   USE gvect,                       ONLY : g
@@ -40,8 +40,8 @@ SUBROUTINE greenfunction(ik, psi, g_psi, q)
   !-- parameters ---------------------------------------------------------
   IMPLICIT none
   INTEGER, INTENT(IN) :: ik
-  COMPLEX(DP), INTENT(INOUT) :: psi(npwx,nbnd)  ! psi is H1*psi and is changed on output!!!
-  COMPLEX(DP), INTENT(OUT) :: g_psi(npwx,nbnd)
+  COMPLEX(DP), INTENT(INOUT) :: psi(npwx*npol,nbnd)  ! psi is H1*psi and is changed on output!!!
+  COMPLEX(DP), INTENT(OUT) :: g_psi(npwx*npol,nbnd)
   REAL(DP) :: q(3)
 
   !-- local variables ----------------------------------------------------
@@ -62,7 +62,7 @@ SUBROUTINE greenfunction(ik, psi, g_psi, q)
   npw = ngk(ik)
 
   ! allocate memory
-  allocate (work(npwx), ps(nbnd,nbnd), h_diag(npwx,nbnd), eprec(nbnd))
+  allocate (work(npwx*npol), ps(nbnd,nbnd), h_diag(npwx*npol,nbnd), eprec(nbnd))
   call allocate_bec_type(nkb, nbnd, becp)
 
   ! check if |q| is zero
@@ -81,15 +81,34 @@ SUBROUTINE greenfunction(ik, psi, g_psi, q)
   if (lgauss) then
      ! metallic case
 #ifdef __BANDS
-     CALL zgemm('C', 'N', nbnd, ibnd_end-ibnd_start+1, npw, &
+     if (noncolin) then
+     
+        CALL zgemm('C', 'N', nbnd, ibnd_end-ibnd_start+1, npwx*npol, (1.d0,0.d0), evq(1,1), &
+                     npwx*npol, psi(1,ibnd_start), npwx*npol, (0.d0,0.d0), ps(1,ibnd_start), nbnd)
+     else
+                     
+        CALL zgemm('C', 'N', nbnd, ibnd_end-ibnd_start+1, npw, &
                  (1.d0,0.d0), evq(1,1), npwx, psi(1,ibnd_start), npwx, (0.d0,0.d0), &
                  ps(1,ibnd_start), nbnd)
+     endif
 #else
-     CALL zgemm('C', 'N', nbnd, nbnd_occ (ik), npw, &
+     if (noncolin) then
+     
+        CALL zgemm('C', 'N', nbnd, nbnd_occ (ik), npwx*npol, (1.d0,0.d0), evq(1,1), &
+                     npwx*npol, psi(1,1), npwx*npol, (0.d0,0.d0), ps(1,1), nbnd)
+     else
+     
+        CALL zgemm('C', 'N', nbnd, nbnd_occ (ik), npw, &
                 (1.d0,0.d0), evq(1,1), npwx, psi(1,1), npwx, (0.d0,0.d0), &
                 ps(1,1), nbnd)
-#endif   
+     endif
+#endif  
+
+#ifdef __BANDS
+     do ibnd = ibnd_start, ibnd_end
+#else
      do ibnd = 1, nbnd_occ(ik)
+#endif
         wg1 = wgauss ((ef-et(ibnd,ik)) / degauss, ngauss)
         w0g = w0gauss((ef-et(ibnd,ik)) / degauss, ngauss) / degauss
         do jbnd = 1, nbnd
@@ -113,13 +132,26 @@ SUBROUTINE greenfunction(ik, psi, g_psi, q)
   else
      ! insulators
 #ifdef __BANDS
-     CALL zgemm('C', 'N', nbnd_occ (ik), ibnd_end-ibnd_start+1, npw, &
+     
+     if (noncolin) then
+        CALL zgemm('C', 'N', nbnd_occ (ik), ibnd_end-ibnd_start+1, npwx*npol, &
+                (1.d0,0.d0), evq(1,1), npwx*npol, psi(1,ibnd_start), npwx*npol, (0.d0,0.d0), &
+                ps(1,ibnd_start), nbnd)
+     else
+         CALL zgemm('C', 'N', nbnd_occ (ik), ibnd_end-ibnd_start+1, npw, &
                 (1.d0,0.d0), evq(1,1), npwx, psi(1,ibnd_start), npwx, (0.d0,0.d0), &
                 ps(1,ibnd_start), nbnd)
+     endif
 #else
-     CALL zgemm('C', 'N', nbnd_occ (ik), nbnd_occ (ik), npw, &
+     if (noncolin) then
+        CALL zgemm('C', 'N', nbnd_occ (ik), nbnd_occ (ik), npwx*npol, &
+                (1.d0,0.d0), evq(1,1), npwx*npol, psi(1,1), npwx*npol, (0.d0,0.d0), &
+                ps(1,1), nbnd)
+     else
+         CALL zgemm('C', 'N', nbnd_occ (ik), nbnd_occ (ik), npw, &
                 (1.d0,0.d0), evq(1,1), npwx, psi(1,1), npwx, (0.d0,0.d0), &
                 ps(1,1), nbnd)
+     endif
 #endif   
   endif
 
@@ -155,25 +187,49 @@ SUBROUTINE greenfunction(ik, psi, g_psi, q)
   if (lgauss) then
      ! metallic case
 #ifdef __BANDS
-     CALL zgemm( 'N', 'N', npw, ibnd_end-ibnd_start+1, nbnd, &
+     if (noncolin) then
+          CALL zgemm( 'N', 'N', npwx*npol, ibnd_end-ibnd_start+1, nbnd, &
+          (1.d0,0.d0), g_psi(1,1), npwx*npol, ps(1,ibnd_start), nbnd, (-1.d0,0.d0), &
+          psi(1,ibnd_start), npwx*npol )
+     else
+          CALL zgemm( 'N', 'N', npw, ibnd_end-ibnd_start+1, nbnd, &
           (1.d0,0.d0), g_psi(1,1), npwx, ps(1,ibnd_start), nbnd, (-1.d0,0.d0), &
           psi(1,ibnd_start), npwx )
+     endif
 #else
-     CALL zgemm( 'N', 'N', npw, nbnd_occ(ik), nbnd, &
+     if (noncolin) then
+          CALL zgemm( 'N', 'N', npwx*npol, nbnd_occ(ik), nbnd, &
+          (1.d0,0.d0), g_psi(1,1), npwx*npol, ps(1,1), nbnd, (-1.d0,0.d0), &
+          psi(1,1), npwx*npol )
+     else
+          CALL zgemm( 'N', 'N', npw, nbnd_occ(ik), nbnd, &
           (1.d0,0.d0), g_psi(1,1), npwx, ps(1,1), nbnd, (-1.d0,0.d0), &
           psi(1,1), npwx )
+     endif
 #endif
 
   else
      ! insulators
 #ifdef __BANDS
-     CALL zgemm( 'N', 'N', npw, ibnd_end-ibnd_start+1, nbnd_occ(ik), &
+     if (noncolin) then
+          CALL zgemm( 'N', 'N', npwx*npol, ibnd_end-ibnd_start+1, nbnd_occ(ik), &
+          (1.d0,0.d0), g_psi(1,1), npwx*npol, ps(1,ibnd_start), nbnd, (-1.d0,0.d0), &
+          psi(1,ibnd_start), npwx*npol )
+     else
+          CALL zgemm( 'N', 'N', npw, ibnd_end-ibnd_start+1, nbnd_occ(ik), &
           (1.d0,0.d0), g_psi(1,1), npwx, ps(1,ibnd_start), nbnd, (-1.d0,0.d0), &
           psi(1,ibnd_start), npwx )
+     endif
 #else
-     CALL zgemm( 'N', 'N', npw, nbnd_occ(ik), nbnd_occ(ik), &
+     if (noncolin) then
+          CALL zgemm( 'N', 'N', npwx*npol, nbnd_occ(ik), nbnd_occ(ik), &
+          (1.d0,0.d0), g_psi(1,1), npwx*npol, ps(1,1), nbnd, (-1.d0,0.d0), &
+          psi(1,1), npwx*npol )
+     else
+          CALL zgemm( 'N', 'N', npw, nbnd_occ(ik), nbnd_occ(ik), &
           (1.d0,0.d0), g_psi(1,1), npwx, ps(1,1), nbnd, (-1.d0,0.d0), &
           psi(1,1), npwx )
+     endif
 #endif
 endif
 
@@ -207,8 +263,11 @@ endif
 #endif
      do ig = 1, npw
         work (ig) = g2kin (ig) * evq (ig, ibnd)
+        if (noncolin) then
+            work(npwx+1:npwx+npw) = g2kin(1:npw)*evc(npwx+1:npwx+npw,ibnd)
+        endif
      enddo
-     eprec (ibnd) = 1.35d0 * zdotc (npw, evq (1, ibnd), 1, work, 1)
+     eprec (ibnd) = 1.35d0 * zdotc (npwx*npol, evq (1, ibnd), 1, work, 1)
   enddo
 #ifdef __MPI
 #ifdef __BANDS
