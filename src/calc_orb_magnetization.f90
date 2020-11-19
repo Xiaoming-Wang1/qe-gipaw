@@ -36,7 +36,7 @@ SUBROUTINE calc_orb_magnetization
   USE gvecw,                  ONLY : gcutw
   USE lsda_mod,               ONLY : lsda, current_spin, isk
   USE becmod,                 ONLY : becp, calbec, allocate_bec_type, deallocate_bec_type
-  USE orbm_module,           ONLY : q_orbm, iverbosity, alpha, &
+  USE gipaw_module,           ONLY : q_gipaw, iverbosity, alpha, &
                                      nbnd_occ, conv_threshold, restart_mode, ry2ha
   USE buffers,                ONLY : get_buffer
   USE mp_pools,               ONLY : my_pool_id, me_pool, root_pool,  &
@@ -114,13 +114,13 @@ SUBROUTINE calc_orb_magnetization
     ! read wfcs from file and compute becp
     call get_buffer (evc, nwordwfc, iunwfc, ik)
     
-    
+    q(:) = 0.d0
     ! calculate du/dk    
     vel_evc(:,:,:) = (0.d0,0.d0)
     do i = 1,3
-       call apply_vel(evc, vel_evc(1,1,i), ik, i)
+       call apply_vel(evc, vel_evc(1,1,i), ik, i, q)
        aux(:,:) = vel_evc(:,:,i)
-       call greenfunction(ik, aux, evc1(1,1,i))
+       call greenfunction(ik, aux, evc1(1,1,i), q)
     enddo
 
        
