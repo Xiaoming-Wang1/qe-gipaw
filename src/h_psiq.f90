@@ -27,12 +27,12 @@ subroutine h_psiq (lda, n, m, psi, hpsi, spsi)
   USE kinds,                 ONLY : dp
   USE becmod,                ONLY : becp, calbec
   USE uspp,                  ONLY : vkb
+  USE noncollin_module,      ONLY : npol, noncolin
 #ifdef __BANDS
   USE mp,                    ONLY : mp_sum
   USE lsda_mod,              ONLY : current_spin
   USE wvfct,                 ONLY : g2kin
   USE scf,                   ONLY : vrs
-  USE noncollin_module,      ONLY : npol, noncolin
 #endif
   !--------------------------------------------------------------------
   IMPLICIT NONE
@@ -43,8 +43,8 @@ subroutine h_psiq (lda, n, m, psi, hpsi, spsi)
   integer, intent(in) :: ibnd_start, ibnd_end
   integer :: ibnd
 #endif
-  complex(dp), intent(in) :: psi(lda,m)
-  complex(dp), intent(out) :: hpsi(lda,m), spsi(lda,m)
+  complex(dp), intent(in) :: psi(lda*npol,m)
+  complex(dp), intent(out) :: hpsi(lda*npol,m), spsi(lda*npol,m)
 
   call start_clock ('h_psiq')
 

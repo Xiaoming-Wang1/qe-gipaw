@@ -40,7 +40,7 @@ SUBROUTINE apply_p(psi, p_psi, ik, ipol, q)
   INTEGER, INTENT(IN) :: ipol             ! cartesian direction (1..3)
   REAL(DP), INTENT(IN) :: q(3)
   COMPLEX(DP), INTENT(IN) :: psi(npwx*npol,nbnd)
-  COMPLEX(DP), INTENT(OUT) :: p_psi(npwx*npol,nbnd)
+  COMPLEX(DP), INTENT(INOUT) :: p_psi(npwx*npol,nbnd)
 
   !-- local variables ----------------------------------------------------
   REAL(DP) :: gk
@@ -53,8 +53,8 @@ SUBROUTINE apply_p(psi, p_psi, ik, ipol, q)
       gk = xk(ipol,ik) + g(ipol,igk_k(ig,ik)) + q(ipol)
       p_psi(ig,ibnd) = p_psi(ig,ibnd) + gk * tpiba * psi(ig,ibnd)
       if (noncolin) then
-          p_psi(npwx+1:npwx+npw,ibnd) = p_psi(npwx+1:npwx+npw,ibnd) + &
-                              gk(1:npw)*psi(npwx+1:npwx+npw,ibnd)
+          p_psi(ig+npwx,ibnd) = p_psi(npwx+ig,ibnd) + &
+                              gk*psi(npwx+ig,ibnd)*tpiba
       endif
     enddo
   enddo
@@ -126,7 +126,7 @@ SUBROUTINE apply_vel_NL(what, psi, vel_psi, ik, ipol, q)
   if (lsda) current_spin = isk(ik)
 
   ! allocate temporary arrays, save old NL-potential
-  allocate(aux(npwx*npol,nbnd), vkb_save(npwx*npol,nkb))
+  allocate(aux(npwx*npol,nbnd), vkb_save(npwx,nkb))
   vkb_save = vkb
 
 #ifdef __BANDS
@@ -229,7 +229,7 @@ SUBROUTINE apply_vel(psi, vel_psi, ik, ipol, q)
   INTEGER, INTENT(IN) :: ipol       ! cartesian direction (1..3)
   INTEGER, INTENT(IN) :: ik         ! k-point
   COMPLEX(DP), INTENT(IN) :: psi(npwx*npol,nbnd)
-  COMPLEX(DP), INTENT(OUT) :: vel_psi(npwx*npol,nbnd)
+  COMPLEX(DP), INTENT(INOUT) :: vel_psi(npwx*npol,nbnd)
   REAL(DP), INTENT(IN) :: q(3)
 
   !-- local variables ----------------------------------------------------

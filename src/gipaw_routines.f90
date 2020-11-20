@@ -168,12 +168,13 @@ SUBROUTINE gipaw_allocate
   USE gipaw_module
   USE ions_base,     ONLY : ntyp => nsp
   USE paw_gipaw,     ONLY : paw_recon
+  USE noncollin_module,            ONLY : npol
   USE pwcom
     
   implicit none
   
   ! wavefunction at k+q  
-  allocate(evq(npwx,nbnd))
+  allocate(evq(npwx*npol,nbnd))
 
   ! eigenvalues
   allocate(etq(nbnd,nkstot))

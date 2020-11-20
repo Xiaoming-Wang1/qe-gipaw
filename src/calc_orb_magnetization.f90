@@ -82,7 +82,7 @@ SUBROUTINE calc_orb_magnetization
   allocate ( aux(npwx*npol,nbnd),  hpsi(npwx*npol) )
 
   ! print memory estimate
-  call orbm_memory_report
+  call gipaw_memory_report
 
   write(stdout, '(5X,''Computing the orbital magnetization (bohr mag/cell):'',$)')
   write(stdout, '(5X,''ethr='',E12.4)') conv_threshold
@@ -96,10 +96,10 @@ SUBROUTINE calc_orb_magnetization
 #ifdef __MPI
     if (me_pool == root_pool) &
     write(*, '(5X,''k-point #'',I5,'' of '',I5,6X,''pool #'',I3,4X,''cpu time:'',F10.1)') &
-      ik, nks, my_pool_id+1, get_clock('orbm')
+      ik, nks, my_pool_id+1, get_clock('GIPAW')
 #else
     write(stdout, '(5X,''k-point #'',I5,'' of '',I5,4X,''cpu time:'',F10.1)') &
-      ik, nks, get_clock('orbm')
+      ik, nks, get_clock('GIPAW')
 #endif
 
     ! initialize k, spin, g2kin used in h_psi    

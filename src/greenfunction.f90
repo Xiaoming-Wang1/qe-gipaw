@@ -70,7 +70,7 @@ SUBROUTINE greenfunction(ik, psi, g_psi, q)
   if (sqrt(q(1)*q(1)+q(2)*q(2)+q(3)*q(3)) < 1d-8) q_is_zero = .true.  
 
   ! evq is already calculated in compute_u_kq.f90
-  if (q_is_zero) evq(:,:) = evc(:,:)
+  if (q_is_zero) evq(:,:) = evc(:,:); etq = et
 
   !====================================================================
   ! apply -Q_{k+q} to the r.h.s.
@@ -126,7 +126,7 @@ SUBROUTINE greenfunction(ik, psi, g_psi, q)
            endif
            ps(jbnd,ibnd) = wwg * ps(jbnd,ibnd)
         enddo
-        call dscal(2*npw, wg1, psi(1,ibnd), 1)
+        call dscal(2*npwx*npol, wg1, psi(1,ibnd), 1)
      enddo
 
   else
@@ -167,6 +167,7 @@ SUBROUTINE greenfunction(ik, psi, g_psi, q)
   ! this is the case with overlap (ultrasoft)
   ! g_psi is used as work space to store S|evq>
   ! |psi> = -(|psi> - S|evq><evq|psi>)
+
 #ifdef __BANDS
   CALL calbec_bands (npwx, npw, nkb, vkb, evq, becp%k, nbnd_occ(ik), ibnd_start, ibnd_end)
   CALL s_psi_bands (npwx, npw, nbnd_occ(ik), evq, g_psi, ibnd_start, ibnd_end)
@@ -264,7 +265,7 @@ endif
      do ig = 1, npw
         work (ig) = g2kin (ig) * evq (ig, ibnd)
         if (noncolin) then
-            work(npwx+1:npwx+npw) = g2kin(1:npw)*evc(npwx+1:npwx+npw,ibnd)
+            work(npwx+ig) = g2kin(ig)*evq(npwx+ig,ibnd)
         endif
      enddo
      eprec (ibnd) = 1.35d0 * zdotc (npwx*npol, evq (1, ibnd), 1, work, 1)
@@ -284,6 +285,9 @@ endif
 #endif
      do ig = 1, npw
         h_diag (ig, ibnd) = 1.d0 / max (1.0d0, g2kin (ig) / eprec (ibnd) )
+        if (noncolin) then
+            h_diag (ig+npwx,ibnd) = h_diag(ig,ibnd)
+        endif
      enddo
   enddo
 
@@ -304,7 +308,8 @@ endif
   g_psi(:,:) = (0.d0, 0.d0)
 
   ! solve linear system  
-  conv_root = .true.
+
+conv_root = .true.
   call cgsolve_all (ch_psi_all, cg_psi, et(1,ik), psi, g_psi, &
        h_diag, npwx, npw, thresh, ik, lter, conv_root, anorm, &
        nbnd_occ(ik), npol )

@@ -172,7 +172,6 @@ PROGRAM gipaw_main
      
   case ( 'orbm' )
      call calc_orb_magnetization
-     if (okvan) call errore('gipaw_main', 'orbital magnetization not available with ultrasoft', 1)
      
   case default
      call errore('gipaw_main', 'wrong or undefined job in input', 1)
